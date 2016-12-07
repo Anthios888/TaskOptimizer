@@ -1,0 +1,60 @@
+Data Types:
+	User:
+		numTargets - how many mobs are we fighting? (INT)
+		spellBook - list of spells manually entered, sorted by DPS (Spell[])
+		recovery - player based global; refresh between spells in miliseconds(INT)
+		timeLim - how long do we want to schedule for? in miliseconds (INT)
+		
+	Spell:
+		User Entered:
+			castTime - how long it takes to cast in miliseconds (INT)
+			recastTime - how long it can be re-cast in miliseconds (INT)
+			duration - only used for DoT based spells, zero otherwise (INT)
+			targets - number of targets spell can hit, 1 if non-AoE (INT)
+			initDmgMin - intial damage minimum (INT)
+			initDmgMax - initial damage maximum (INT)
+			triggers - number of times damage can trigger (INT)
+			tickDmgMin - recurring damage minimum, zero if non-DoT (INT)
+			tickDmgMax - recurring damage maximum, zero if non-DoT (INT)
+			dotFreq - frequency ticks occur (INT)
+		Internally Calculated:
+			nextCast - time used + castTime + recastTime, cleared on use (INT)
+			totalDmgMin - initDmgMin x triggers (INT)
+			totalDmgMax - initDmgMin x triggers (INT)
+			numTicks - duration / dotFreq (INT)
+			totalTickMin - tickDmgMin * numTicks (INT)
+			totalTickMax - tickDmgMax * numTicks (INT)
+			overallMin = totalDmgMin + totalTickMin (INT)
+			overallMax = totalDmgMax + totalTickMax (INT)
+			avgDmg - (overallMin + overallMax) x MIN[numTargets:targets] / 2 (INT)
+			DPS - avgDmg / (castTime + User.recovery) (INT)
+			
+	Schedule:
+		currentTime - time in miliseconds of next potential spell object (INT)
+		spellFound - flag to indicate we have a spell this loop (Boolean)
+		totalAvgDmg - rolling total of the avgDmg added to schedule (INT)
+		spellList - ordered list of spells cast (Spell[])
+
+Greedy Algorithm Pseudo-code:
+	While (currentTime < timeLim){
+		spellFound = false
+		for (spell in spellBook){
+			if(currentTime > spell.nextCast){
+				spellFound = true
+				spellList.add(spell)
+				spell.nextCast = currentTime + spell.castTime + spell.recastTime
+				currentTime = currentTime + spell.castTime + recovery
+				totalAvgDmg = totalAvgDmg + spell.avgDmg
+				
+				break for loop
+			}
+		}
+		if(!spellFound){
+			currentTime = currentTime + 10
+		}
+	}
+	//eventually I can add in a check vs totalAvgDmg and 
+	//iterate through solutions maximizing this value
+	//however a greedy algorithm will only find one solutions
+	//can we assume this solution is the best?
+	
