@@ -1,0 +1,12 @@
+This is an alternative to the first "simple" optimizer.
+
+1) calculate LCM based on recast time for each spell in spellbook
+2) create a list of enough copies of each spell to "fill" the LCM
+3) create an optimized "knapsack" with spell list from step 2, Cost = casting time, value = damage
+4) schedule knapsack from 3, using a greedy algorithm based on Recast duration
+
+Deadline = recast time + 1
+Execution = casting time
+Period = recast time
+https://en.wikipedia.org/wiki/Earliest_deadline_first_scheduling
+https://en.wikipedia.org/wiki/Knapsack_problem#frbanner3
